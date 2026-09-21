@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#b91c1c">
+<title>Boxing Reflex Trainer</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:#101010;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#app{height:100dvh;display:flex;flex-direction:column}
+#screen{flex:1;min-height:150px;background:#b91c1c;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px}
+#punch{font-size:clamp(42px,12vw,105px);font-weight:950;line-height:1.05;letter-spacing:-.03em;text-shadow:0 2px 4px #0005;overflow-wrap:anywhere}
+#panel{background:#171717;padding:12px 14px calc(12px + env(safe-area-inset-bottom));max-height:57dvh;overflow-y:auto}
+.row{display:flex;gap:10px;align-items:center;margin:8px 0}
+label{font-size:14px;flex:1}
+select,input,button{font:inherit;color:#fff;background:#292929;border:1px solid #555;border-radius:9px;padding:9px}
+select{max-width:62%;min-width:135px}input[type=range]{width:56%;padding:0;accent-color:#eee}
+button{flex:1;font-weight:750}#start{background:#fff;color:#111}
+#key{font-size:13px;line-height:1.65;margin-top:8px}
+#status,#hint{font-size:12px;color:#bbb;margin-top:8px;line-height:1.4}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body><div id="app">
+<div id="screen"><div id="punch"></div></div>
+<div id="panel">
+<div class="row"><label for="mode">Training mode</label><select id="mode"><option value="real">Realistic opponent</option><option value="movement">Movement practice</option></select></div>
+<div id="movementSettings" hidden>
+<div class="row"><label for="combo">Repeat combo</label><select id="combo">
+<option value="random">Random combo (repeat until Stop)</option>
+<optgroup label="1 punch">
+<option value="1">Single jab · 1</option>
+<option value="2">Rear hand · 2</option>
+<option value="3">Lead hook · 3</option>
+<option value="4">Uppercut · 4</option>
+</optgroup>
+<optgroup label="2 punches">
+<option value="1,1">Double jab · 1-1</option>
+<option value="1,2">Jab–rear hand · 1-2</option>
+<option value="1,3">Jab–hook · 1-3</option>
+<option value="1,4">Jab–uppercut · 1-4</option>
+<option value="2,3">Rear–hook · 2-3</option>
+<option value="2,4">Rear–uppercut · 2-4</option>
+<option value="3,2">Hook–rear · 3-2</option>
+<option value="3,4">Hook–uppercut · 3-4</option>
+<option value="4,3">Uppercut–hook · 4-3</option>
+</optgroup>
+<optgroup label="3 punches">
+<option value="1,1,1">Triple jab · 1-1-1</option>
+<option value="1,1,2">Double jab–rear · 1-1-2</option>
+<option value="1,2,1">Jab–rear–jab · 1-2-1</option>
+<option value="1,2,3">Jab–rear–hook · 1-2-3</option>
+<option value="1,2,4">Jab–rear–uppercut · 1-2-4</option>
+<option value="1,3,2">Jab–hook–rear · 1-3-2</option>
+<option value="1,3,4">Jab–hook–uppercut · 1-3-4</option>
+<option value="1,4,3">Jab–uppercut–hook · 1-4-3</option>
+<option value="2,3,2">Rear–hook–rear · 2-3-2</option>
+<option value="2,4,3">Rear–uppercut–hook · 2-4-3</option>
+<option value="3,2,3">Hook–rear–hook · 3-2-3</option>
+<option value="3,4,2">Hook–uppercut–rear · 3-4-2</option>
+</optgroup>
+<optgroup label="4 punches">
+<option value="1,1,1,1">Four jabs · 1-1-1-1</option>
+<option value="1,1,1,2">Triple jab–rear · 1-1-1-2</option>
+<option value="1,1,2,3">Double jab–rear–hook · 1-1-2-3</option>
+<option value="1,1,2,4">Double jab–rear–uppercut · 1-1-2-4</option>
+<option value="1,2,1,2">Jab–rear–jab–rear · 1-2-1-2</option>
+<option value="1,2,1,3">Jab–rear–jab–hook · 1-2-1-3</option>
+<option value="1,2,3,2">Jab–rear–hook–rear · 1-2-3-2</option>
+<option value="1,2,3,4">Jab–rear–hook–uppercut · 1-2-3-4</option>
+<option value="1,2,4,3">Jab–rear–uppercut–hook · 1-2-4-3</option>
+<option value="1,3,2,3">Jab–hook–rear–hook · 1-3-2-3</option>
+<option value="2,3,2,3">Rear–hook–rear–hook · 2-3-2-3</option>
+</optgroup>
+<optgroup label="5 punches">
+<option value="1,1,1,2,3">Triple jab–rear–hook · 1-1-1-2-3</option>
+<option value="1,1,2,3,2">Double jab–rear–hook–rear · 1-1-2-3-2</option>
+<option value="1,1,2,3,4">Double jab–rear–hook–uppercut · 1-1-2-3-4</option>
+<option value="1,2,1,2,3">Jab–rear–jab–rear–hook · 1-2-1-2-3</option>
+<option value="1,2,3,2,3">Jab–rear–hook–rear–hook · 1-2-3-2-3</option>
+<option value="1,2,3,4,3">Jab–rear–hook–uppercut–hook · 1-2-3-4-3</option>
+<option value="1,3,2,3,2">Jab–hook–rear–hook–rear · 1-3-2-3-2</option>
+</optgroup>
+<optgroup label="6 punches">
+<option value="1,1,1,1,1,1">Six jabs · 1-1-1-1-1-1</option>
+<option value="1,1,1,2,3,2">Triple jab–rear–hook–rear · 1-1-1-2-3-2</option>
+<option value="1,1,2,3,2,3">Double jab–rear–hook–rear–hook · 1-1-2-3-2-3</option>
+<option value="1,1,2,3,4,3">Double jab–rear–hook–uppercut–hook · 1-1-2-3-4-3</option>
+<option value="1,2,1,2,3,2">Jab–rear–jab–rear–hook–rear · 1-2-1-2-3-2</option>
+<option value="1,2,3,2,3,2">Jab–rear–hook–rear–hook–rear · 1-2-3-2-3-2</option>
+<option value="1,2,3,4,3,2">Jab–rear–hook–uppercut–hook–rear · 1-2-3-4-3-2</option>
+<option value="1,2,4,3,2,3">Jab–rear–uppercut–hook–rear–hook · 1-2-4-3-2-3</option>
+</optgroup>
+</select></div>
+<div class="row"><label for="gap">Between combos: <b id="gapValue">2.0s</b></label><input id="gap" type="range" min="0.5" max="10" step="0.5" value="2"></div>
+<div class="row"><label for="speed">Punch speed: <b id="speedValue">Normal</b></label><input id="speed" type="range" min="1" max="5" step="1" value="3"></div>
+</div>
+<div class="row"><button id="start">START</button><button id="stop">STOP</button></div>
+<div id="status">Ready · Combos: <b id="combos">0</b> · Punches: <b id="punches">0</b></div>
+<div id="key"><span class="swatch" style="background:#00b957"></span>Green = Jab (1) &nbsp; <span class="swatch" style="background:#8434d6"></span>Purple = Rear hand (2)<br><span class="swatch" style="background:#1879ed"></span>Blue = Hook (3) &nbsp; <span class="swatch" style="background:#ff8800"></span>Orange = Uppercut (4)</div>
+<div id="hint">Red = move and shadowbox. A colored screen = incoming punch. Realistic mode uses jab-heavy attacks, varied pauses and changes of pace; movement mode repeats one selected combination (up to six punches), including a single randomly chosen combo for each Start. This is a visual cue drill, not a substitute for reacting to a partner's actual movement.</div>
+</div></div>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const screen=$("screen"),punch=$("punch");
+const moves={1:{name:"JAB",color:"#00b957"},2:{name:"REAR HAND",color:"#8434d6"},3:{name:"HOOK",color:"#1879ed"},4:{name:"UPPERCUT",color:"#ff8800"}};
+const movementPresets=[
+[1],
+[2],
+[3],
+[4],
+[1,1],
+[1,2],
+[1,3],
+[1,4],
+[2,3],
+[2,4],
+[3,2],
+[3,4],
+[4,3],
+[1,1,1],
+[1,1,2],
+[1,2,1],
+[1,2,3],
+[1,2,4],
+[1,3,2],
+[1,3,4],
+[1,4,3],
+[2,3,2],
+[2,4,3],
+[3,2,3],
+[3,4,2],
+[1,1,1,1],
+[1,1,1,2],
+[1,1,2,3],
+[1,1,2,4],
+[1,2,1,2],
+[1,2,1,3],
+[1,2,3,2],
+[1,2,3,4],
+[1,2,4,3],
+[1,3,2,3],
+[2,3,2,3],
+[1,1,1,2,3],
+[1,1,2,3,2],
+[1,1,2,3,4],
+[1,2,1,2,3],
+[1,2,3,2,3],
+[1,2,3,4,3],
+[1,3,2,3,2],
+[1,1,1,1,1,1],
+[1,1,1,2,3,2],
+[1,1,2,3,2,3],
+[1,1,2,3,4,3],
+[1,2,1,2,3,2],
+[1,2,3,2,3,2],
+[1,2,3,4,3,2],
+[1,2,4,3,2,3]
+];
+const realisticPresets=[[1],[1],[1],[1],[1,1],[1,1],[1,1,1],[1,2],[1,2],[1,2,1],[1,1,2],[1,2,3],[1,2,3,4],[1,1,2,3],[1,2,4],[1,3,2],[2,3,2],[2,3],[3,2],[1,4,3],[1,2,1,2],[1,1,2,3,4]];
+let active=false,token=0,pending=null,combos=0,punches=0,sessionCombo=null;
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function red(){screen.style.background="#b91c1c";punch.textContent=""}
+function show(n){screen.style.background=moves[n].color;punch.textContent=moves[n].name}
+function wait(ms,id){return new Promise(resolve=>{
+ if(!active||id!==token){resolve(false);return}
+ pending=setTimeout(()=>{pending=null;resolve(active&&id===token)},ms);
+})}
+function status(s){$("status").firstChild.textContent=s+" · "}
+function stats(){ $("combos").textContent=combos;$("punches").textContent=punches }
+function getMovementCombo(){return sessionCombo;}
+function realCombo(){
+ // Jab-led selections dominate; occasional power-led attacks add unpredictability.
+ let c=pick(realisticPresets);
+ if(Math.random()<.22)c=pick([[1],[1],[1,1],[1,1,1],[1,2],[1,2,1]]);
+ return c;
+}
+function realPause(){
+ // Weighted pauses: frequent short resets, occasional long lulls and quick re-entries.
+ const r=Math.random();
+ return r<.17?rand(450,1400):r<.73?rand(1700,4300):r<.94?rand(4300,8500):rand(8500,15000);
+}
+function realGap(i,c){
+ // Bursts, slight hesitations, and occasionally an unusually fast or delayed next punch.
+ const r=Math.random();
+ let gap=r<.17?rand(105,205):r<.69?rand(220,420):r<.91?rand(440,740):rand(750,1150);
+ if(c[i]===1&&c[i+1]===1&&Math.random()<.55)gap*=.77;
+ return gap;
+}
+function movementGap(){
+ return [740,570,420,285,175][Number($("speed").value)-1];
+}
+async function run(id){
+ while(active&&id===token){
+  const mode=$("mode").value;
+  red();status(mode==="real"?"Watching opponent":"Reset");
+  const pause=mode==="real"?realPause():Number($("gap").value)*1000;
+  if(!await wait(pause,id))break;
+  const combo=mode==="real"?realCombo():getMovementCombo();
+  combos++;stats();
+  for(let i=0;i<combo.length;i++){
+   if(!active||id!==token)break;
+   const gap=mode==="real"?realGap(i,combo):movementGap();
+   const duration=mode==="real"?Math.min(260,Math.max(115,gap*.57)):Math.min(330,Math.max(110,gap*.54));
+   show(combo[i]);punches++;stats();status("Defend");
+   if(!await wait(duration,id))break;
+   red();
+   if(i<combo.length-1){
+    if(!await wait(Math.max(45,gap-duration),id))break;
+   }
+  }
+ }
+}
+function stop(){
+ active=false;token++;sessionCombo=null;if(pending!==null){clearTimeout(pending);pending=null}
+ red();status("Stopped");
+}
+$("start").addEventListener("click",()=>{
+ if(active)return;
+ active=true;token++;combos=0;punches=0;
+ const choice=$("combo").value;
+ sessionCombo=choice==="random"?[...pick(movementPresets)]:choice.split(",").map(Number);
+ stats();run(token);
+});
+$("stop").addEventListener("click",stop);
+$("mode").addEventListener("change",()=>{
+ stop();$("movementSettings").hidden=$("mode").value!=="movement";status("Ready");
+});
+$("gap").addEventListener("input",()=>{$("gapValue").textContent=Number($("gap").value).toFixed(1)+"s"});
+$("speed").addEventListener("input",()=>{$("speedValue").textContent=["Very slow","Slow","Normal","Fast","Very fast"][Number($("speed").value)-1]});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&active)stop()});
+red();
+})();
+</script></body></html>
